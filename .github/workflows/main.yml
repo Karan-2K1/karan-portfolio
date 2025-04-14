@@ -1,0 +1,29 @@
+name: Deploy Static Website to S3
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🧰 Install AWS CLI via pip
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip
+          pip3 install awscli --upgrade --user
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🚀 Deploy to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+        run: |
+          aws s3 sync . s3://code-bucket2k2 --exclude ".git/*" --exclude ".github/*" --delete
